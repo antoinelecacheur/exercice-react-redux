@@ -14,9 +14,9 @@ Redux va gérer les états de l'application.
 ![Diagramme Redux](./public/redux-principle.png)
 
 ## Mise en pratique
-- Clonez le repository sur votre machine :
+- Pour conserver une trace de ce que vous avez fait vous pouvez forker le projet (fork en haut de la page), puis cloner le fork sur votre machine :
 ```
-git clone <url ssh>
+git clone <votre url ssh avec votre idep>
 ```
 
 - Dans votre répertoire `exercice-react-redux` nouvellement créé, installez les dépendances et lancez l'application :
@@ -25,6 +25,8 @@ git clone <url ssh>
 npm install
 npm start
 ```
+
+## Exercice 1 - Se familiariser avec Redux
 
 - Il faut d'abord rajouter un Provider, qui va englober notre appli pour la faire communiquer avec le store.
 
@@ -191,3 +193,19 @@ const AppConnecte = connect(mapStateToProps, mapDispatchToProps)(App);
 export default AppConecte;
 */
 ```
+
+- Vous devriez avoir quelque chose qui fonctionne ! Vous pouvez adapter l'exemple pour, par exemple, taper du texte dans une balise `<input type='text' />`, que vous allez conserver dans le state de App, puis que vous utiliserez lors du clic sur le bouton.
+- Sauvegardez votre travail puis passez sur la branche où se situe la correction :
+```
+git add .
+git commit -m "<votre message de commit>"
+git push
+git checkout exo1-corr
+```
+
+## Exercice 2 - Redux thunk, un nouvel endroit où faire ses appels à une API
+
+- redux-thunk permet, entre-autres, d'introduire de la logique asynchrone dans le store. La dépendance redux-thunk est déjà installée sur le projet (vous pouvez la trouver dans le package.json).
+
+- Partons d'une application React de base, qui récupère déjà des données via fetch :
+
