@@ -1,9 +1,9 @@
 
-## Redux
+# Redux
 
 Redux va gérer les états de l'application.
 
-### Principe de base
+## Principe de base
 
 - On veut stocker l'état global de l'application (state des composants, actions qui modifient ces états) à un endroit unique, accessible partout dans l'application.
 - Pour cela, on définit un **store**, qui stocke tout ces états.
@@ -11,7 +11,9 @@ Redux va gérer les états de l'application.
 - On définit un **reducer** qui associe à une action un état différent (ajouter un objet, supprimer, etc).
 - Dans mon composant React, j'associe le store et les actions sous forme de props. Cela permet de récupérer l'état du store, et de le modifier.
 
-### Mise en pratique
+![Diagramme Redux](./public/redux-principle.png)
+
+## Mise en pratique
 
 - Installer les dépendances suivantes :
 
