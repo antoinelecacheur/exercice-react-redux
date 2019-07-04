@@ -1,23 +1,13 @@
 import React from 'react'
 
 export default class ListeMemes extends React.Component {
-    state = {
-        memes: [],
-    }
 
     componentDidMount() {
-        fetch("https://api.imgflip.com/get_memes")
-            .then(response => response.json())
-            .then(json => {
-                this.setState({
-                    // Les attributs data et memes sont propres à l'API utilisée, regarder le retour au format json pour s'en rendre compte
-                    memes: json.data.memes
-                })
-            })
+        this.props.getData()
     }
 
     render() {
-        const { memes } = this.state
+        const { memes } = this.props
         return (
             <div>
                 <ul>
