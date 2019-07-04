@@ -127,8 +127,8 @@ export default App;
 ```javascript
 // App.js
 import React from 'react'
-import {connect} from 'react-redux
-import {setText} from './redux/actions/actions
+import {connect} from 'react-redux'
+import {setText} from './redux/actions/actions'
 
 /* Cette fonction prend en paramètre state, qui va être associé via connect au state définit dans notre reducer.js (donc dans le store), on récupère directement state.text
 La fonction est également appelée à chaque modification du state dans le store
