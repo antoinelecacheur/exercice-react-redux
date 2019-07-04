@@ -14,12 +14,16 @@ Redux va gérer les états de l'application.
 ![Diagramme Redux](./public/redux-principle.png)
 
 ## Mise en pratique
+- Clonez le repository sur votre machine :
+```
+git clone <url ssh>
+```
 
-- Installer les dépendances suivantes :
+- Dans votre répertoire `exercice-react-redux` nouvellement créé, installez les dépendances et lancez l'application :
 
 ```
-npm install --save redux
-npm install --save react-redux
+npm install
+npm start
 ```
 
 - Il faut d'abord rajouter un Provider, qui va englober notre appli pour la faire communiquer avec le store.
