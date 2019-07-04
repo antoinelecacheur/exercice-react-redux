@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default class listeMemes extends React.Component {
+export default class TextComponent extends React.Component {
     state = {
         monTexte: "",
     }

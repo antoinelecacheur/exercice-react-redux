@@ -1,12 +1,12 @@
 import React from 'react'
-import listeMemesContainer from './components/listeMemesContainer'
+import TextComponentContainer from './components/TextComponentContainer';
 
 export default class App extends React.Component {
 
 
   render() {
     return (
-        <listeMemesContainer />
+      <TextComponentContainer/>
     )
   }
 

@@ -1,7 +1,7 @@
 
 import { connect } from 'react-redux';
-import listeMemes from './listeMemes';
 import { setText } from '../redux/actions/actions';
+import TextComponent from './TextComponent';
 
 const mapStateToProps = state => {
     return {
@@ -17,4 +17,6 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(listeMemes)
+// Ici on exporte le composant TextComponent connecté au store, il reçoit donc bien les props text et changerTexte(text)
+
+export default connect(mapStateToProps, mapDispatchToProps)(TextComponent)

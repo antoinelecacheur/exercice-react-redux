@@ -19,7 +19,7 @@ Redux va gérer les états de l'application.
 git clone <votre url ssh avec votre idep>
 ```
 
-- Dans votre répertoire `exercice-react-redux` nouvellement créé, installez les dépendances et lancez l'application :
+- Dans votre répertoire `exercice-react-redux` nouvellement créé, installez les dépendances (`redux`et `react-redux` entre autres) et lancez l'application :
 
 ```
 npm install
@@ -203,13 +203,27 @@ git push
 git checkout exo1-corr
 ```
 
-## Exercice 2 - Redux thunk, un nouvel endroit où faire ses appels à une API
+## Exercice 2 - Higher-Order Component et CombineReducers
 
-- redux-thunk permet, entre-autres, d'introduire de la logique asynchrone dans le store. La dépendance redux-thunk est déjà installée sur le projet (vous pouvez la trouver dans le package.json).
 
-- Partons d'une application React de base, qui récupère déjà des données via fetch :
+- Récupérez le code de l'exo 2
 ```
 git checkout exo2
 ```
+
+- Regardons un moment une autre manière d'obtenir la page de l'exercice 1. On a la même implémentation que précédemment mais dans un composant à part : `TextComponent`. Ce composant n'interagit pas directement avec le store, on a retiré les méthodes `mapStateToProps`, `mapDispatchToProps` et `connect` pour le mettre dans un **Container**. C'est le pattern du Higher-Order Component ([HOC](https://reactjs.org/docs/higher-order-components.html)).
+
+- Dans un premier temps, ce pattern peut sembler agaçant, il rajoute encore une couche d'abstraction. Toutefois, il permet de séparer distinctement le composant générique `TextComponent` qui ne fait que recevoir des props. Tandis que le **Container** ne fait que la liaison avec le store. C'est ainsi plus facile de modifier l'implémentation liée à redux.
+
+- On s'apprête à utiliser plusieurs reducers distincts par la suite qui concerneront différents composants, je vous propose d'adopter une nouvelle organisation des fichiers côté redux.
+
+```
+git checkout exo2-part2
+```
+
+## Exercice 3 - Redux thunk, effectuer ses appels à une API depuis le store
+- redux-thunk permet, entre-autres, d'introduire de la logique asynchrone dans le store. La dépendance redux-thunk est déjà installée sur le projet (vous pouvez la trouver dans le package.json).
+- Partons d'une application React de base, qui récupère déjà des données via fetch :
+
 
 
