@@ -208,4 +208,8 @@ git checkout exo1-corr
 - redux-thunk permet, entre-autres, d'introduire de la logique asynchrone dans le store. La dépendance redux-thunk est déjà installée sur le projet (vous pouvez la trouver dans le package.json).
 
 - Partons d'une application React de base, qui récupère déjà des données via fetch :
+```
+git checkout exo2
+```
+
 
