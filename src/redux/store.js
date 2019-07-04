@@ -1,11 +1,7 @@
-import { createStore, combineReducers } from "redux";
-
-import textComponent from './textComponent/index';
-import compteur from './compteur/index';
+/*import { createStore, combineReducers } from "redux";
 
 const rootReducer = combineReducers(
-  ...{ textComponent },
-  ...{ compteur }
+
 )
 
 const store = createStore(
@@ -14,4 +10,4 @@ const store = createStore(
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 );
 
-export default store;
+export default store;*/

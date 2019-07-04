@@ -343,8 +343,17 @@ export default connect(mapStateToProps, mapDispatchToProps)(Compteur)
 - Et voilà ! On a réussi à créer plusieurs reducers et à les gérer séparément.
 
 ## Exercice 3 - Redux thunk, effectuer ses appels à une API depuis le store
+
 - redux-thunk permet, entre-autres, d'introduire de la logique asynchrone dans le store. La dépendance redux-thunk est déjà installée sur le projet (vous pouvez la trouver dans le package.json).
+
 - Partons d'une application React de base, qui récupère déjà des données via fetch :
+```
+git checkout exo3
+```
 
+- Dans `ListeMemes` on effectue notre appel à l'API au sein de la méthode `ComponentDidMount()`, c'est-à-dire juste après la création de notre composant. Essayons d'isoler ce fetch pour le faire directement depuis le store.
 
+- On va créer dans un premier temps notre dossier listeMemes dans le répertoire redux avec les trois fichiers classiques `index.js`, `listeMemes.actions.js` et `listeMemes.js`.
+```javascript
 
+```
