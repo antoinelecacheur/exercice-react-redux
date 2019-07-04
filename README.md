@@ -220,6 +220,127 @@ git checkout exo2
 ```
 git checkout exo2-part2
 ```
+- On va créer un dossier sous le répertoire redux pour chaque composant que l'on va connecter au store, avec des fichiers `index.js` où se font tous les exports, `textComponent.actions.js` où je déclare mes actions, et `textComponent.js` où se trouve mon reducer. On garde ainsi une logique liée au composant, et lorsqu'on voudra modifier le comportement du store pour un composant, ce sera plus facile de s'y retrouver.
+
+- J'ai par ailleurs rajouté des lignes dans le store pour préparer l'utilisation de plusieurs reducers :
+```javascript
+import { createStore, combineReducers } from "redux";
+
+// On importe notre reducer
+import textComponent from './textComponent/index';
+
+// Crée un gros reducer composé de plusieurs
+const rootReducer = combineReducers(
+  ...{ textComponent }
+)
+
+const store = createStore(
+  rootReducer,
+  // Nécessaire pour pouvoir utiliser l'extension Redux Devtools dans Firefox ou Chrome
+  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+);
+
+export default store;
+```
+
+- Ajoutons maintenant un nouveau composant qui va nous permettre d'avoir un compteur que l'on pourra incrémenter et décrémenter en appuyant sur des boutons.
+```javascript
+import React from 'react'
+
+export default class Compteur extends React.Component {
+
+    incrementer = () => {
+        this.props.increment()
+    }
+
+    decrementer = () => {
+        this.props.decrement()
+    }
+
+    render() {
+        return (
+            <div>
+                <button onClick={this.decrementer}>Décrémenter</button>
+                <span>Mon compteur : {this.props.cpt} </span>
+                <button onClick={this.incrementer}>Incrémenter</button>
+            </div >
+        )
+    }
+}
+```
+- Dans le dossier redux, on peut reprendre la même logique que pour textComponent et créer un dossier compteur avec `index.js`, `compteur.actions.js` et `compteur.js` :
+```javascript
+// index.js avec les exports classiques
+
+```
+Les 2 actions incrémenter et décrémenter peuvent s'écrire ainsi :
+```javascript
+// compteur.actions.js
+export const INCREMENT = "INCREMENT";
+export const plus = () => {
+  return { type: INCREMENT };
+};
+
+export const DECREMENT = "DECREMENT"
+export const minus = () => {
+    return { type: DECREMENT}
+}
+```
+
+Et le reducer pour les gérer :
+```javascript
+import * as actions from "../compteur/compteur.actions";
+
+const initialState = {
+    cpt: 0
+};
+
+const reducer = (state = initialState, action) => {
+    switch (action.type) {
+        case actions.INCREMENT:
+            return { ...state, cpt: state.cpt + 1 };
+        case actions.DECREMENT:
+            return { ...state, cpt: state.cpt - 1 }
+        default:
+            return state;
+    }
+};
+
+export default reducer;
+```
+
+- Il ne faut pas oublier de **rajouter le reducer dans le store**.
+
+
+- Enfin, il faut créer `CompteurContainer` pour pouvoir interagir avec le store :
+```javascript
+
+import { connect } from 'react-redux';
+import * as compteur from '../redux/compteur/index';
+import Compteur from './Compteur';
+
+const mapStateToProps = state => {
+    return {
+        // Cette fois c'est via le reducer compteur qu'on accès à l'attribut cpt dans le store
+        cpt: state.compteur.cpt
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+        increment: () => {
+            dispatch(compteur.plus())
+        },
+        decrement: () => {
+            dispatch(compteur.minus())
+        }
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Compteur)
+```
+
+- Et voilà ! On a réussi à créer plusieurs reducers et à les gérer séparément.
 
 ## Exercice 3 - Redux thunk, effectuer ses appels à une API depuis le store
 - redux-thunk permet, entre-autres, d'introduire de la logique asynchrone dans le store. La dépendance redux-thunk est déjà installée sur le projet (vous pouvez la trouver dans le package.json).

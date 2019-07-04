@@ -1,4 +1,4 @@
-import { SET_TEXT } from "../actions/actions.js";
+import * as actions from "../textComponent/textComponent.actions";
 
 // On définit l'état initial associé à ce reducer, c'est l'état initial qu'on aura dans le store
 const initialState = {
@@ -7,7 +7,7 @@ const initialState = {
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case SET_TEXT:
+    case actions.SET_TEXT:
       // On renvoie un NOUVEL état, pour ne pas modifier l'ancien, ce qui permet d'avoir un historique des actions et des états
 
       return { ...state, text: action.payload };

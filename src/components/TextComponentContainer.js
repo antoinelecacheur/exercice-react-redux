@@ -1,18 +1,21 @@
 
 import { connect } from 'react-redux';
-import { setText } from '../redux/actions/actions';
+import * as textComponent from '../redux/textComponent/index';
 import TextComponent from './TextComponent';
 
 const mapStateToProps = state => {
     return {
-        text: state.text
+        /* Ici on doit rajouter textComponent à cause du combineReducer
+        En regardant avec les redux devtools on voit bien que c'est le chemin à utiliser pour accéder à text
+        */
+        text: state.textComponent.text
     }
 }
 
 const mapDispatchToProps = dispatch => {
     return {
         changerTexte: (text) => {
-            dispatch(setText(text))
+            dispatch(textComponent.setText(text))
         }
     }
 }
