@@ -1,68 +1,187 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+## Redux
 
-In the project directory, you can run:
+Redux va gérer les états de l'application.
 
-### `npm start`
+### Principe de base
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- On veut stocker l'état global de l'application (state des composants, actions qui modifient ces états) à un endroit unique, accessible partout dans l'application.
+- Pour cela, on définit un **store**, qui stocke tout ces états.
+- On définit des **actions**, qui vont décrire très simplement ce qui se déroule. Exemple : on rajoute un item à une liste de shopping.
+- On définit un **reducer** qui associe à une action un état différent (ajouter un objet, supprimer, etc).
+- Dans mon composant React, j'associe le store et les actions sous forme de props. Cela permet de récupérer l'état du store, et de le modifier.
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+### Mise en pratique
 
-### `npm test`
+- Installer les dépendances suivantes :
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```
+npm install --save redux
+npm install --save react-redux
+```
 
-### `npm run build`
+- Il faut d'abord rajouter un Provider, qui va englober notre appli pour la faire communiquer avec le store.
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```javascript
+// index.js
+import React from "react";
+import ReactDOM from "react-dom";
+import { Provider } from "react-redux";
+import App from "./App";
+import store from "./redux/store";
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById("root")
+);
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Ensuite on définit notre store (par exemple dans un dossier src/redux ) :
 
-### `npm run eject`
+```javascript
+// store.js
+import { createStore } from "redux";
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+import reducer from "./reducer/reducer";
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+const store = createStore(
+  reducer,
+  // Nécessaire pour pouvoir utiliser l'extension Redux Devtools dans Firefox ou Chrome
+  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+);
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+export default store;
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+- On définit des actions (par exemple dans un dossier src/redux/actions)
 
-## Learn More
+```javascript
+// actions.js
+export const SET_TEXT = "SET_TEXT";
+export const setText = payload => {
+  return { type: SET_TEXT, payload };
+};
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+// Où payload correspond à l'information qu'on veut transmettre, ici du texte, mais ça peut très bien être un objet {id: 1, nom: "Name" } etc.
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- On gère cette action au sein d'un reducer (dossier src/redux/reducer), en même temps que l'on définit un état initial pour le store :
 
-### Code Splitting
+```javascript
+// reducer.js
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+import { SET_TEXT } from "../actions/actions.js";
 
-### Analyzing the Bundle Size
+// On définit l'état initial associé à ce reducer, c'est l'état initial qu'on aura dans le store
+const initialState = {
+  text: "Texte vide"
+};
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+const reducer = (state = initialState, action) => {
+  switch (action.type) {
+    case SET_TEXT:
+      // On renvoie un NOUVEL état, pour ne pas modifier l'ancien, ce qui permet d'avoir un historique des actions et des états
 
-### Making a Progressive Web App
+      return { ...state, text: action.payload };
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+    // Le spread iterator (...state) renvoie le contenu du state avant d'avoir effectué l'action, ensuite on rajoute à cet état un attribut text (qui existait dans l'état initial et est donc remplacé)
+    default:
+      return state;
+  }
+};
 
-### Advanced Configuration
+export default reducer;
+```
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+- Exemple simple avec un composant App qui contient le texte et un bouton pour le modifier :
 
-### Deployment
+```javascript
+// App.js
+import React from "react";
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
+class App extends React.Component {
+  modifierTexte = () => {
+    // Ici on va rajouter notre action setText(payload)
+  };
 
-### `npm run build` fails to minify
+  render() {
+    return (
+      <div>
+        <span>Texte qu'on introduira ensuite</span>
+        <button onClick={this.modifierTexte}>Modifier le texte</button>
+      </div>
+    );
+  }
+}
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+export default App;
+```
+
+- A ce stade, on n'a pas encore fait le lien entre notre composant `<App/>` et le store. Pour cela, on va utiliser la fonction `connect` de react-redux, et ses deux paramètres (également des fonctions) : `mapStateToProps` et `mapDispatchToProps`.
+  Connect va en fait englober notre composant `App`, et lui apporter un lien avec le store à travers ses deux fonctions paramètres.
+
+```javascript
+// App.js
+import React from 'react'
+import {connect} from 'react-redux
+import {setText} from './redux/actions/actions
+
+/* Cette fonction prend en paramètre state, qui va être associé via connect au state définit dans notre reducer.js (donc dans le store), on récupère directement state.text
+La fonction est également appelée à chaque modification du state dans le store
+
+Le lien qui est fait est donc : store -> composant, en passant l'état dans les props (comme l'indique le nom de la fonction)
+*/
+
+const mapStateToProps = state => {
+  return {
+    text: state.text
+  }
+}
+
+/* Cette fonction prend en paramètre dispatch, qui permet de renvoyer une fonction dans les props. On utilise la fonction setText() des actions, qui va renvoyer une action de type SET_TEXT, avec le text saisi en paramètre. Cette action sera gérée directement dans le reducer (au sein du switch - case).
+
+On définit la fonction changerTexte qui va être envoyée dans les props de notre composant App.
+*/
+
+const mapDispatchToProps = dispatch => {
+  return {
+    changerTexte: (text) => {
+      dispatch(setText(text))
+    }
+  }
+}
+
+
+
+class App extends React.Component {
+
+  modifierTexte = () => {
+    // Ici on va rajouter notre action setText(payload)
+    // On appelle notre fonction passée en props.
+    this.props.changerTexte("Nouveau texte")
+  }
+
+  render() {
+    return (
+      <div>
+      {/* mapStateToProps envoie text dans les props du composant */}
+        <span> { this.props.text } </span>
+        <button onClick={this.modifierTexte}>Modifier le texte</button>
+      </div>
+    )
+  }
+
+}
+
+// On exporte le composant App connecté :
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
+
+/* Équivalent à :
+const AppConnecte = connect(mapStateToProps, mapDispatchToProps)(App);
+export default AppConecte;
+*/
+```
