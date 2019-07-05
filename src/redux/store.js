@@ -3,9 +3,8 @@ import listeMemes from './listeMemes/index';
 import thunk from "redux-thunk";
 
 const rootReducer = combineReducers({
-  ...{ listeMemes }
-}
-)
+  listeMemes
+})
 
 // Nécessaire pour utiliser les devtools et pouvoir également utiliser thunk
 const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
