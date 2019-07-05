@@ -19,7 +19,7 @@ Redux va gérer les états de l'application.
 git clone <votre url ssh avec votre idep>
 ```
 
-- Dans votre répertoire `exercice-react-redux` nouvellement créé, installez les dépendances et lancez l'application :
+- Dans votre répertoire `exercice-react-redux` nouvellement créé, installez les dépendances (`redux`et `react-redux` entre autres) et lancez l'application :
 
 ```
 npm install
@@ -203,9 +203,253 @@ git push
 git checkout exo1-corr
 ```
 
-## Exercice 2 - Redux thunk, un nouvel endroit où faire ses appels à une API
+## Exercice 2 - Higher-Order Component et CombineReducers
+
+
+- Récupérez le code de l'exo 2
+```
+git checkout exo2
+```
+
+- Regardons un moment une autre manière d'obtenir la page de l'exercice 1. On a la même implémentation que précédemment mais dans un composant à part : `TextComponent`. Ce composant n'interagit pas directement avec le store, on a retiré les méthodes `mapStateToProps`, `mapDispatchToProps` et `connect` pour le mettre dans un **Container**. C'est le pattern du Higher-Order Component ([HOC](https://reactjs.org/docs/higher-order-components.html)).
+
+- Dans un premier temps, ce pattern peut sembler agaçant, il rajoute encore une couche d'abstraction. Toutefois, il permet de séparer distinctement le composant générique `TextComponent` qui ne fait que recevoir des props. Tandis que le **Container** ne fait que la liaison avec le store. C'est ainsi plus facile de modifier l'implémentation liée à redux.
+
+- On s'apprête à utiliser plusieurs reducers distincts par la suite qui concerneront différents composants, je vous propose d'adopter une nouvelle organisation des fichiers côté redux.
+
+```
+git checkout exo2-part2
+```
+- On va créer un dossier sous le répertoire redux pour chaque composant que l'on va connecter au store, avec des fichiers `index.js` où se font tous les exports, `textComponent.actions.js` où je déclare mes actions, et `textComponent.js` où se trouve mon reducer. On garde ainsi une logique liée au composant, et lorsqu'on voudra modifier le comportement du store pour un composant, ce sera plus facile de s'y retrouver.
+
+- J'ai par ailleurs rajouté des lignes dans le store pour préparer l'utilisation de plusieurs reducers :
+```javascript
+import { createStore, combineReducers } from "redux";
+
+// On importe notre reducer
+import textComponent from './textComponent/index';
+
+// Crée un gros reducer composé de plusieurs
+const rootReducer = combineReducers({
+  ...{ textComponent }
+  })
+
+const store = createStore(
+  rootReducer,
+  // Nécessaire pour pouvoir utiliser l'extension Redux Devtools dans Firefox ou Chrome
+  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+);
+
+export default store;
+```
+
+- Ajoutons maintenant un nouveau composant qui va nous permettre d'avoir un compteur que l'on pourra incrémenter et décrémenter en appuyant sur des boutons.
+```javascript
+import React from 'react'
+
+export default class Compteur extends React.Component {
+
+    incrementer = () => {
+        this.props.increment()
+    }
+
+    decrementer = () => {
+        this.props.decrement()
+    }
+
+    render() {
+        return (
+            <div>
+                <button onClick={this.decrementer}>Décrémenter</button>
+                <span>Mon compteur : {this.props.cpt} </span>
+                <button onClick={this.incrementer}>Incrémenter</button>
+            </div >
+        )
+    }
+}
+```
+- Dans le dossier redux, on peut reprendre la même logique que pour textComponent et créer un dossier compteur avec `index.js`, `compteur.actions.js` et `compteur.js` :
+```javascript
+// index.js avec les exports classiques
+import compteur from './compteur.js'
+export default compteur
+export * from './compteur.actions.js'
+
+```
+Les 2 actions incrémenter et décrémenter peuvent s'écrire ainsi :
+```javascript
+// compteur.actions.js
+export const INCREMENT = "INCREMENT";
+export const plus = () => {
+  return { type: INCREMENT };
+};
+
+export const DECREMENT = "DECREMENT"
+export const minus = () => {
+    return { type: DECREMENT}
+}
+```
+
+Et le reducer pour les gérer :
+```javascript
+import * as actions from "../compteur/compteur.actions";
+
+const initialState = {
+    cpt: 0
+};
+
+const reducer = (state = initialState, action) => {
+    switch (action.type) {
+        case actions.INCREMENT:
+            return { ...state, cpt: state.cpt + 1 };
+        case actions.DECREMENT:
+            return { ...state, cpt: state.cpt - 1 }
+        default:
+            return state;
+    }
+};
+
+export default reducer;
+```
+
+- Il ne faut pas oublier de **rajouter le reducer dans le store**.
+
+
+- Enfin, il faut créer `CompteurContainer` pour pouvoir interagir avec le store :
+```javascript
+
+import { connect } from 'react-redux';
+import * as compteur from '../redux/compteur/index';
+import Compteur from './Compteur';
+
+const mapStateToProps = state => {
+    return {
+        // Cette fois c'est via le reducer compteur qu'on accès à l'attribut cpt dans le store
+        cpt: state.compteur.cpt
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+        increment: () => {
+            dispatch(compteur.plus())
+        },
+        decrement: () => {
+            dispatch(compteur.minus())
+        }
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Compteur)
+```
+
+- Et voilà ! On a réussi à créer plusieurs reducers et à les gérer séparément.
+
+## Exercice 3 - Redux thunk, effectuer ses appels à une API depuis le store
 
 - redux-thunk permet, entre-autres, d'introduire de la logique asynchrone dans le store. La dépendance redux-thunk est déjà installée sur le projet (vous pouvez la trouver dans le package.json).
 
 - Partons d'une application React de base, qui récupère déjà des données via fetch :
+```
+git checkout exo3
+```
 
+- Dans `ListeMemes` on effectue notre appel à l'API au sein de la méthode `ComponentDidMount()`, c'est-à-dire juste après la création de notre composant. Essayons d'isoler ce fetch pour le faire directement depuis le store.
+
+- On va créer dans un premier temps notre dossier listeMemes dans le répertoire redux avec les trois fichiers classiques `index.js`, `listeMemes.actions.js` et `listeMemes.js`.
+```javascript
+// index.js
+import listeMemes from './listeMemes.js'
+export default listeMemes
+export * from './listeMemes.actions.js'
+```
+
+```javascript
+// listeMemes.actions.js
+export const LISTE_MEMES_GET = "LISTE_MEMES_GET"
+
+// Fonction qui va renvoyer les données et le type de l'action
+export const get = payload => {
+    return {type: LISTE_MEMES_GET, payload}
+}
+
+// Implémentation du fetch
+export const getMemes = () => dispatch => {
+    return fetch("https://api.imgflip.com/get_memes")
+    .then(response => response.json())
+    .then(json => {
+        return dispatch(get(json.data.memes))
+    })
+}
+```
+- Il faut bien retenir qu'il est essentiel d'utiliser redux-thunk pour pouvoir utiliser une fonction asynchrone comme `getMemes()` dans le store. Nous le verrons dans le fichier `store.js`. Mais ça ne nous empêche pas de déclarer également des actions classiques dans `listeMemes.actions.js`
+
+```javascript
+// listeMemes.js
+import * as actions from './listeMemes.actions'
+
+const initialState = {
+    memes: []
+}
+
+const reducer = (state = initialState, action) => {
+    switch (action.type) {
+        case actions.LISTE_MEMES_GET:
+            return { ...state, memes: action.payload }
+        default:
+            return state
+    }
+}
+
+export default reducer
+```
+
+- On peut alors ajouter notre reducer au store, et au passage utiliser la fameuse fonction `applyMiddleWare(thunk)` qui va nous permettre d'envoyer notre action asynchrone :
+```javascript
+// store.js
+import { createStore, combineReducers, applyMiddleware, compose } from "redux";
+import listeMemes from './listeMemes/index';
+import thunk from "redux-thunk";
+
+const rootReducer = combineReducers({
+  ...{ listeMemes }
+}
+)
+
+// Nécessaire pour utiliser les devtools avec thunk
+const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+
+const store = createStore(
+  rootReducer,
+  composeEnhancer(applyMiddleware(thunk)),
+);
+
+export default store;
+```
+
+- Enfin, on crée notre `ListeMemesContainer.js` pour interagir avec le store.
+```javascript
+// ListeMemesContainer.js
+import {connect} from 'react-redux'
+import * as listeMemes from './../redux/listeMemes';
+import ListeMemes from './ListeMemes';
+
+const mapStateToProps = state => {
+    return {
+        memes: state.listeMemes.memes
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+        getData: () => {
+          // On récupère notre fonction getMemes() comme on le faisait déjà avec une action normale
+            dispatch(listeMemes.getMemes())
+        }
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ListeMemes)
+```
+
+- Normalement, l'application devrait à nouveau fonctionner comme c'était le cas au départ ! Maintenant les appels à l'API sont dissociés de nos composants React, on peut retracer les appels directement avec les redux devtools.
