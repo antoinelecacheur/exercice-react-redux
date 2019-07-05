@@ -1,6 +1,6 @@
 
 import { connect } from 'react-redux';
-import * as compteur from '../redux/compteur/index';
+import * as compteur from '../../redux/compteur';
 import Compteur from './Compteur';
 
 const mapStateToProps = state => {
