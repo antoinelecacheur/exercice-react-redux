@@ -1,5 +1,5 @@
 import {connect} from 'react-redux'
-import * as listeMemes from './../redux/listeMemes/listeMemes.actions';
+import * as listeMemes from './../redux/listeMemes';
 import ListeMemes from './ListeMemes';
 
 const mapStateToProps = state => {
