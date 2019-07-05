@@ -230,9 +230,9 @@ import { createStore, combineReducers } from "redux";
 import textComponent from './textComponent/index';
 
 // Crée un gros reducer composé de plusieurs
-const rootReducer = combineReducers(
+const rootReducer = combineReducers({
   ...{ textComponent }
-)
+  })
 
 const store = createStore(
   rootReducer,
@@ -271,6 +271,9 @@ export default class Compteur extends React.Component {
 - Dans le dossier redux, on peut reprendre la même logique que pour textComponent et créer un dossier compteur avec `index.js`, `compteur.actions.js` et `compteur.js` :
 ```javascript
 // index.js avec les exports classiques
+import compteur from './compteur.js'
+export default compteur
+export * from './compteur.actions.js'
 
 ```
 Les 2 actions incrémenter et décrémenter peuvent s'écrire ainsi :
@@ -343,8 +346,110 @@ export default connect(mapStateToProps, mapDispatchToProps)(Compteur)
 - Et voilà ! On a réussi à créer plusieurs reducers et à les gérer séparément.
 
 ## Exercice 3 - Redux thunk, effectuer ses appels à une API depuis le store
+
 - redux-thunk permet, entre-autres, d'introduire de la logique asynchrone dans le store. La dépendance redux-thunk est déjà installée sur le projet (vous pouvez la trouver dans le package.json).
+
 - Partons d'une application React de base, qui récupère déjà des données via fetch :
+```
+git checkout exo3
+```
 
+- Dans `ListeMemes` on effectue notre appel à l'API au sein de la méthode `ComponentDidMount()`, c'est-à-dire juste après la création de notre composant. Essayons d'isoler ce fetch pour le faire directement depuis le store.
 
+- On va créer dans un premier temps notre dossier listeMemes dans le répertoire redux avec les trois fichiers classiques `index.js`, `listeMemes.actions.js` et `listeMemes.js`.
+```javascript
+// index.js
+import listeMemes from './listeMemes.js'
+export default listeMemes
+export * from './listeMemes.actions.js'
+```
 
+```javascript
+// listeMemes.actions.js
+export const LISTE_MEMES_GET = "LISTE_MEMES_GET"
+
+// Fonction qui va renvoyer les données et le type de l'action
+export const get = payload => {
+    return {type: LISTE_MEMES_GET, payload}
+}
+
+// Implémentation du fetch
+export const getMemes = () => dispatch => {
+    return fetch("https://api.imgflip.com/get_memes")
+    .then(response => response.json())
+    .then(json => {
+        return dispatch(get(json.data.memes))
+    })
+}
+```
+- Il faut bien retenir qu'il est essentiel d'utiliser redux-thunk pour pouvoir utiliser une fonction asynchrone comme `getMemes()` dans le store. Nous le verrons dans le fichier `store.js`. Mais ça ne nous empêche pas de déclarer également des actions classiques dans `listeMemes.actions.js`
+
+```javascript
+// listeMemes.js
+import * as actions from './listeMemes.actions'
+
+const initialState = {
+    memes: []
+}
+
+const reducer = (state = initialState, action) => {
+    switch (action.type) {
+        case actions.LISTE_MEMES_GET:
+            return { ...state, memes: action.payload }
+        default:
+            return state
+    }
+}
+
+export default reducer
+```
+
+- On peut alors ajouter notre reducer au store, et au passage utiliser la fameuse fonction `applyMiddleWare(thunk)` qui va nous permettre d'envoyer notre action asynchrone :
+```javascript
+// store.js
+import { createStore, combineReducers, applyMiddleware, compose } from "redux";
+import listeMemes from './listeMemes/index';
+import thunk from "redux-thunk";
+
+const rootReducer = combineReducers({
+  ...{ listeMemes }
+}
+)
+
+// Nécessaire pour utiliser les devtools avec thunk
+const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+
+const store = createStore(
+  rootReducer,
+  composeEnhancer(applyMiddleware(thunk)),
+);
+
+export default store;
+```
+
+- Enfin, on crée notre `ListeMemesContainer.js` pour interagir avec le store.
+```javascript
+// ListeMemesContainer.js
+import {connect} from 'react-redux'
+import * as listeMemes from './../redux/listeMemes';
+import ListeMemes from './ListeMemes';
+
+const mapStateToProps = state => {
+    return {
+        memes: state.listeMemes.memes
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+        getData: () => {
+          // On récupère notre fonction getMemes() comme on le faisait déjà avec une action normale
+            dispatch(listeMemes.getMemes())
+        }
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ListeMemes)
+```
+
+- Normalement, l'application devrait à nouveau fonctionner comme c'était le cas au départ ! Maintenant les appels à l'API sont dissociés de nos composants React, on peut retracer les appels directement avec les redux devtools.

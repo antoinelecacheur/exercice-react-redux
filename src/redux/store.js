@@ -1,12 +1,10 @@
 import { createStore, combineReducers } from "redux";
 
 import textComponent from './textComponent/index';
-import compteur from './compteur/index';
 
-const rootReducer = combineReducers(
-  ...{ textComponent },
-  ...{ compteur }
-)
+const rootReducer = combineReducers({
+  textComponent,
+})
 
 const store = createStore(
   rootReducer,
