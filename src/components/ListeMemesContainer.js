@@ -11,6 +11,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         getData: () => {
+            // On récupère notre fonction getMemes() comme on le faisait déjà avec une action normale
             dispatch(listeMemes.getMemes())
         }
     }

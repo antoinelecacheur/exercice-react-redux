@@ -1,14 +1,18 @@
-import { createStore, combineReducers } from "redux";
+import { createStore, combineReducers, applyMiddleware, compose } from "redux";
 import listeMemes from './listeMemes/index';
+import thunk from "redux-thunk";
 
-const rootReducer = combineReducers(
+const rootReducer = combineReducers({
   ...{ listeMemes }
+}
 )
+
+// Nécessaire pour utiliser les devtools et pouvoir également utiliser thunk
+const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 const store = createStore(
   rootReducer,
-  // Nécessaire pour pouvoir utiliser l'extension Redux Devtools dans Firefox ou Chrome
-  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+  composeEnhancer(applyMiddleware(thunk)),
 );
 
 export default store;

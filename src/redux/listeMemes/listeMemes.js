@@ -4,10 +4,10 @@ const initialState = {
     memes: []
 }
 
-const reducer = (state = initialState, action) {
+const reducer = (state = initialState, action) => {
     switch (action.type) {
         case actions.LISTE_MEMES_GET:
-            return { ...state, memes: payload }
+            return { ...state, memes: action.payload }
         default:
             return state
     }
